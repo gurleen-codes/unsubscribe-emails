@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Unsubscriber</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Email Unsubscriber</h1>
+        
+        <!-- Login Form -->
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+            <form id="emailForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="email" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Number of Emails to Scan</label>
+                    <input type="number" id="numEmails" value="50" min="1" max="100"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Scan Emails
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden max-w-4xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-4">Unsubscribe Options</h2>
+            <div id="resultsList" class="space-y-4"></div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const resultsList = document.getElementById('resultsList');
+
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+
+            try {
+                const response = await axios.post('/scan', {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    num_emails: document.getElementById('numEmails').value
+                });
+
+                resultsList.innerHTML = '';
+                response.data.data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-md p-4';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-medium">${item.sender}</h3>
+                                <p class="text-sm text-gray-500">Method: ${item.method}</p>
+                            </div>
+                            <button onclick="unsubscribe('${item.unsubscribe_link}', '${item.sender}')"
+                                    class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                Unsubscribe
+                            </button>
+                        </div>
+                    `;
+                    resultsList.appendChild(card);
+                });
+
+                results.classList.remove('hidden');
+            } catch (error) {
+                alert(error.response?.data?.message || 'An error occurred');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+
+        async function unsubscribe(link, sender) {
+            try {
+                const response = await axios.post('/unsubscribe', {
+                    link: link,
+                    sender: sender
+                });
+                alert(response.data.message);
+            } catch (error) {
+                alert(error.response?.data?.message || 'Failed to unsubscribe');
+            }
+        }
+    </script>
+</body>
+</html> 
