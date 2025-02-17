@@ -30,26 +30,36 @@ class EmailUnsubscriber:
             raise ConnectionError(f"Failed to connect to Gmail: {str(e)}")
 
     def find_unsubscribe_links(self, num_emails: int = 50) -> List[Dict]:
-        """
-        Scan Gmail inbox for newsletter subscriptions
-        Returns: List of newsletters with unsubscribe options
-        """
-        mail = self.connect_to_email()
-        
-        # Select Gmail inbox
+        # Establish connection to Gmail
+        mail = self.connect_to_email()  # This line defines the 'mail' variable
         mail.select("INBOX")
-        
-        # Search for promotional emails in Gmail
-        # Gmail-specific search for promotional emails
-        _, message_numbers = mail.search(None, 'CATEGORY "PROMOTIONS"')
-        
-        # ... rest of the scanning logic ...
-        
-        # Add Gmail-specific metadata
-        for email_data in unsubscribe_data:
-            email_data['provider'] = 'Gmail'
-            email_data['category'] = 'Promotions'  # or other Gmail categories
-        
+
+        # Use a more general search command
+        _, message_numbers = mail.search(None, 'ALL')  # Change this line
+
+        # Initialize the unsubscribe_data list
+        unsubscribe_data = []
+
+        # Process the message numbers
+        message_numbers = message_numbers[0].split()  # Split the response into individual message IDs
+
+        # Limit the number of emails processed
+        for num in message_numbers[-num_emails:]:  # Get the last 'num_emails' emails
+            # Fetch the email by ID
+            _, msg_data = mail.fetch(num, '(RFC822)')
+            message = email.message_from_bytes(msg_data[0][1])
+
+            # Logic to find unsubscribe links in the email
+            unsubscribe_link = self._find_body_unsubscribe(message)  # Example method to find unsubscribe link
+            if unsubscribe_link:
+                unsubscribe_data.append({
+                'sender': message['From'],
+                'unsubscribe_link': unsubscribe_link,
+                'method': 'body',  # or 'header' based on your logic
+                'provider': 'Gmail',
+                'category': 'Promotions'  # or other categories based on your logic
+                })
+        print("Raw email content:", message.get_payload(decode=True))
         return unsubscribe_data
 
     def get_subscription_stats(self) -> Dict:
@@ -82,11 +92,12 @@ class EmailUnsubscriber:
         """Find unsubscribe link in email body"""
         if message.is_multipart():
             for part in message.walk():
-                if part.get_content_type() == "text/html":
-                    return self._extract_unsubscribe_from_html(part.get_payload())
+                content_type = part.get_content_type()
+                if content_type == "text/html":
+                    return self._extract_unsubscribe_from_html(part.get_payload(decode=True).decode(part.get_content_charset() or 'utf-8'))
         else:
             if message.get_content_type() == "text/html":
-                return self._extract_unsubscribe_from_html(message.get_payload())
+                return self._extract_unsubscribe_from_html(message.get_payload(decode=True).decode(message.get_content_charset() or 'utf-8'))
         return None
 
     def _extract_unsubscribe_from_html(self, html_content: str) -> str:
