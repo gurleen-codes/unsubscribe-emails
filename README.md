@@ -10,6 +10,7 @@ A Python-based tool that helps you bulk unsubscribe from unwanted email newslett
 - 🗑️ One-click unsubscribe from multiple newsletters
 - 📁 Focuses on promotional emails in Gmail
 - 🔄 Supports both header-based and in-body unsubscribe links
+- 🖥️ **New:** Interactive dashboard for managing subscriptions visually
 
 ## Prerequisites
 
@@ -60,6 +61,18 @@ http://127.0.0.1:5001
 
 3. Enter your Gmail address and the App Password you generated
 4. Click "Scan Emails" to start scanning for newsletters
+
+## **Dashboard Feature**
+
+The tool now includes an **interactive dashboard** that provides a user-friendly way to manage your subscriptions.
+
+### **How to Use the Dashboard**
+1. After scanning, the dashboard displays:
+   - **Total subscriptions found**
+   - **Successfully unsubscribed emails**
+   - **Estimated time saved**
+2. You can select emails and click **Unsubscribe** to remove them from mailing lists.
+3. The dashboard dynamically updates as new emails are scanned.
 
 ## API Documentation
 
@@ -142,69 +155,6 @@ def unsubscribe(self, link: str) -> bool:
     Returns:
         bool: True if unsubscribe request was successful (HTTP 200)
     """
-```
-
-### Web API Endpoints
-
-#### 1. Scan Emails
-```http
-POST /scan
-Content-Type: application/json
-
-Request Body:
-{
-    "email": "your.email@gmail.com",
-    "password": "your-app-password",
-    "num_emails": 50
-}
-
-Response:
-{
-    "status": "success",
-    "data": [
-        {
-            "sender": "newsletter@example.com",
-            "unsubscribe_link": "https://example.com/unsubscribe",
-            "method": "header",
-            "provider": "Gmail",
-            "category": "Promotions"
-        }
-    ]
-}
-```
-
-#### 2. Unsubscribe
-```http
-POST /unsubscribe
-Content-Type: application/json
-
-Request Body:
-{
-    "link": "https://example.com/unsubscribe",
-    "sender": "newsletter@example.com"
-}
-
-Response:
-{
-    "status": "success",
-    "message": "Successfully unsubscribed from newsletter@example.com"
-}
-```
-
-### Error Handling
-
-The API uses standard HTTP status codes:
-- 200: Success
-- 400: Bad Request (invalid input)
-- 401: Unauthorized (invalid credentials)
-- 500: Server Error
-
-Error responses follow the format:
-```json
-{
-    "status": "error",
-    "message": "Detailed error message"
-}
 ```
 
 ## Security Notes
