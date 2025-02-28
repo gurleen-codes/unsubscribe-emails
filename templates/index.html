@@ -16,22 +16,18 @@
             <form id="emailForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Email Address</label>
-                    <input type="email" id="email" required
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" required
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="password" id="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <p class="mt-1 text-xs text-gray-500">For Gmail, use an App Password. <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-blue-600 hover:underline">Generate one here</a>.</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Number of Emails to Scan</label>
-                    <input type="number" id="numEmails" value="50" min="1" max="100"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="number" id="numEmails" value="50" min="1" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
-                <button type="submit" 
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Scan Emails
                 </button>
             </form>
@@ -52,6 +48,8 @@
     <script>
         document.getElementById('emailForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log("Submitting form...");
+
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
             const resultsList = document.getElementById('resultsList');
@@ -59,81 +57,61 @@
             loading.classList.remove('hidden');
             results.classList.add('hidden');
 
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const numEmails = parseInt(document.getElementById('numEmails').value, 10);
+
+            console.log("Captured values:", { email, password, numEmails });
+
             try {
-                const response = await axios.post('/scan', {
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value,
-                    num_emails: document.getElementById('numEmails').value
-                });
+                const response = await axios.post('/scan', { email, password, num_emails: numEmails });
+                console.log("Response from API:", response.data);
+
+                if (response.data.redirect) {
+                    window.location.href = response.data.redirect;
+                    return;
+                }
 
                 resultsList.innerHTML = '';
-                
-                if (response.data.data.length === 0) {
+
+                if (!response.data.data || response.data.data.length === 0) {
                     resultsList.innerHTML = '<div class="bg-white rounded-lg shadow-md p-4">No unsubscribe links found.</div>';
                 } else {
                     response.data.data.forEach(item => {
                         const card = document.createElement('div');
                         card.className = 'bg-white rounded-lg shadow-md p-4';
                         
-                        // Clean up the unsubscribe link - check if it's a valid URL or HTML string
-                        let isValidLink = true;
-                        if (typeof item.unsubscribe_link === 'string') {
-                            // Check if it looks like HTML/CSS code by looking for common indicators
-                            if (item.unsubscribe_link.includes('class=') || 
-                                item.unsubscribe_link.includes('<') || 
-                                item.unsubscribe_link.includes('px-') || 
-                                item.unsubscribe_link.includes('bg-')) {
-                                isValidLink = false;
-                            }
-                            
-                            // Also check if it starts with http:// or https://
-                            if (!item.unsubscribe_link.startsWith('http')) {
-                                isValidLink = false;
-                            }
-                        }
-                        
-                        // Create a clean sender name
-                        let senderName = item.sender;
-                        if (senderName.includes('<')) {
-                            senderName = senderName.split('<')[0].trim();
-                        }
-                        if (senderName.includes('"')) {
-                            senderName = senderName.replace(/"/g, '').trim();
-                        }
-                        
+                        let isValidLink = typeof item.unsubscribe_link === 'string' &&
+                                         item.unsubscribe_link.startsWith('http') &&
+                                         !item.unsubscribe_link.includes('<') &&
+                                         !item.unsubscribe_link.includes('class=');
+
+                        let senderName = item.sender.replace(/<.*?>|"/g, '').trim();
+
                         const flexContainer = document.createElement('div');
                         flexContainer.className = 'flex justify-between items-center';
-                        
+
                         const senderInfo = document.createElement('div');
-                        
                         const senderTitle = document.createElement('h3');
                         senderTitle.className = 'text-lg font-medium';
                         senderTitle.textContent = senderName;
-                        
-                        // Removed the methodInfo paragraph element
-                        
+
                         const unsubButton = document.createElement('button');
                         unsubButton.textContent = 'Unsubscribe';
                         unsubButton.className = 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2';
-                        
-                        // Add the click handler based on link validity
-                        if (isValidLink) {
-                            unsubButton.addEventListener('click', () => {
+
+                        unsubButton.addEventListener('click', () => {
+                            if (isValidLink) {
                                 unsubscribe(item.unsubscribe_link, senderName);
-                            });
-                        } else {
-                            unsubButton.addEventListener('click', () => {
-                                alert(`Cannot automatically unsubscribe from ${senderName}. Please check your inbox for emails from this sender and look for an unsubscribe link at the bottom.`);
-                            });
-                        }
-                        
-                        // Assemble the card
+                            } else {
+                                alert(`Cannot automatically unsubscribe from ${senderName}. Please check your inbox for an unsubscribe link.`);
+                            }
+                        });
+
                         senderInfo.appendChild(senderTitle);
-                        // Removed the line that adds methodInfo to senderInfo
-                        
                         flexContainer.appendChild(senderInfo);
                         flexContainer.appendChild(unsubButton);
-                        
+
                         card.appendChild(flexContainer);
                         resultsList.appendChild(card);
                     });
@@ -141,6 +119,7 @@
 
                 results.classList.remove('hidden');
             } catch (error) {
+                console.error("Error sending request:", error);
                 alert(error.response?.data?.message || 'An error occurred');
             } finally {
                 loading.classList.add('hidden');
@@ -152,15 +131,8 @@
             loadingEl.classList.remove('hidden');
             
             try {
-                const response = await axios.post('/unsubscribe', {
-                    link: link,
-                    sender: sender
-                });
-                
+                const response = await axios.post('/unsubscribe', { link, sender });
                 alert(response.data.message);
-                
-                // If successful, you could also update the UI to show this item as unsubscribed
-                // For example, changing the button to "Unsubscribed" and disabling it
             } catch (error) {
                 alert(error.response?.data?.message || `Failed to unsubscribe from ${sender}`);
             } finally {
