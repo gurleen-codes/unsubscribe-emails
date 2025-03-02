@@ -10,27 +10,86 @@ class EmailUnsubscriber:
     def __init__(self, email_address: str, app_password: str):
         self.email_address = email_address
         self.app_password = app_password
-        
-        # Verify it's a Gmail address
-        if not email_address.endswith('@gmail.com'):
-            raise ValueError("Currently only Gmail addresses are supported")
     
     def connect_to_email(self) -> imaplib.IMAP4_SSL:
-        """Establish connection to Gmail"""
+        """
+        Establishes connection to email provider's IMAP server
+        
+        Returns:
+        IMAP4_SSL: Connected mail object
+        
+        Raises:
+        ConnectionError: If connection or authentication fails
+        ValueError: If email provider is not supported
+        """
+        # Extract domain from email address
+        domain = self.email_address.split('@')[-1].lower()
+        
+        # Configure server settings based on email provider
+        if domain == 'gmail.com':
+            server = "imap.gmail.com"
+            port = 993
+            error_help = ("Login failed. Make sure you're using an App Password. "
+                        "Go to Google Account → Security → App Passwords to generate one.")
+        elif domain in ['outlook.com', 'hotmail.com', 'live.com', 'msn.com']:
+            server = "outlook.office365.com"
+            port = 993
+            error_help = ("Login failed. For Outlook, you may need to generate an app password. "
+                        "Go to Account settings → Security → App passwords.")
+        elif domain == 'yahoo.com':
+            server = "imap.mail.yahoo.com"
+            port = 993
+            error_help = ("Login failed. For Yahoo Mail, you may need to generate an app password. "
+                        "Go to Account Info → Account Security → Generate app password.")
+        elif domain in ['aol.com', 'aim.com']:
+            server = "imap.aol.com"
+            port = 993
+            error_help = ("Login failed. For AOL, you may need to generate an app password. "
+                        "Go to Account Security → Generate app password.")
+        elif domain in ['icloud.com', 'me.com', 'mac.com']:
+            server = "imap.mail.me.com"
+            port = 993
+            error_help = ("Login failed. For iCloud, you need to generate an app-specific password. "
+                        "Go to appleid.apple.com → Security → Generate Password.")
+        elif domain == 'protonmail.com':
+            server = "imap.protonmail.ch"
+            port = 993
+            error_help = ("Login failed. For ProtonMail, you need to set up the ProtonMail Bridge "
+                        "application first and use those credentials.")
+        elif domain == 'zoho.com':
+            server = "imap.zoho.com"
+            port = 993
+            error_help = "Login failed. Check your Zoho Mail settings to ensure IMAP access is enabled."
+        else:
+            # Allow custom server configuration
+            if hasattr(self, 'custom_imap_server') and hasattr(self, 'custom_imap_port'):
+                server = self.custom_imap_server
+                port = self.custom_imap_port
+                error_help = "Login failed. Check your email provider's IMAP settings."
+            else:
+                raise ValueError(
+                    f"Unsupported email provider: {domain}. "
+                    "Please use a supported email provider or configure custom IMAP settings."
+                )
+        
         try:
-            mail = imaplib.IMAP4_SSL("imap.gmail.com")
+            # Connect to server with appropriate settings
+            mail = imaplib.IMAP4_SSL(server, port)
             mail.login(self.email_address, self.app_password)
+            
+            # Store provider info for later use
+            self.email_provider = domain
+            
             return mail
         except imaplib.IMAP4.error as e:
-            if "Invalid credentials" in str(e):
-                raise ConnectionError(
-                    "Login failed. If using Gmail, make sure you're using an App Password. "
-                    "Go to Google Account → Security → App Passwords to generate one."
-                )
-            raise ConnectionError(f"Failed to connect to Gmail: {str(e)}")
+            if any(phrase in str(e).lower() for phrase in ["invalid credentials", "authentication failed"]):
+                raise ConnectionError(f"{error_help}")
+            raise ConnectionError(f"Failed to connect to email server: {str(e)}")
+        except Exception as e:
+            raise ConnectionError(f"Unexpected error connecting to email server: {str(e)}")
 
     def find_unsubscribe_links(self, num_emails: int = 50) -> List[Dict]:
-        # Establish connection to Gmail
+        # Establish connection to email provider
         mail = self.connect_to_email()
         mail.select("INBOX")
 
@@ -69,7 +128,7 @@ class EmailUnsubscriber:
                         'sender': sender_name or from_header,
                         'unsubscribe_link': unsubscribe_link,
                         'method': method,
-                        'provider': 'Gmail',
+                        'provider': self.email_provider,
                         'category': self._determine_category(message)
                     })
             except Exception as e:
@@ -109,7 +168,7 @@ class EmailUnsubscriber:
         """Get statistics about your newsletter subscriptions"""
         mail = self.connect_to_email()
         mail.select("INBOX")
-        
+    
         stats = {
             'total_promotional': 0,
             'frequent_senders': {},
@@ -119,17 +178,22 @@ class EmailUnsubscriber:
                 'Social': 0
             }
         }
-        
-        # Count promotional emails
-        _, messages = mail.search(None, 'CATEGORY "PROMOTIONS"')
+
+        # Generic search filter for newsletters
+        _, messages = mail.search(None, 'FROM "newsletter" OR SUBJECT "unsubscribe"')
         stats['total_promotional'] = len(messages[0].split())
-        
+
         return stats
 
     def _extract_url_from_header(self, header_unsubscribe: str) -> str:
         """Extract URL from List-Unsubscribe header"""
         urls = re.findall(r'<(https?://[^>]+)>', header_unsubscribe)
         return urls[0] if urls else None
+
+    def set_custom_imap(self, server: str, port: int):
+        """Set custom IMAP server for unsupported providers"""
+        self.custom_imap_server = server
+        self.custom_imap_port = port
 
     def _find_body_unsubscribe(self, message) -> str:
         """Find unsubscribe link in email body"""

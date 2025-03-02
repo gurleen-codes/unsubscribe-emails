@@ -1,22 +1,23 @@
 # Email Unsubscriber
 
-A Python-based tool that helps you bulk unsubscribe from unwanted email newsletters and subscriptions. Currently optimized for Gmail accounts.
+A Python-based tool that helps you bulk unsubscribe from unwanted email newsletters and subscriptions. Now supports multiple email providers, including Gmail, Outlook, Yahoo, iCloud, AOL, and custom IMAP providers.
 
 ## Features
 
-- 🔍 Automatically scans your Gmail inbox for newsletter subscriptions
+- 🔍 Automatically scans your email inbox for newsletter subscriptions
 - 📊 Provides statistics about your newsletter subscriptions
-- 🔐 Secure authentication using Gmail App Passwords
+- 🔐 Secure authentication using App Passwords for supported providers
 - 🗑️ One-click unsubscribe from multiple newsletters
-- 📁 Focuses on promotional emails in Gmail
+- 📁 Focuses on promotional emails across providers
 - 🔄 Supports both header-based and in-body unsubscribe links
 - 🖥️ **New:** Interactive dashboard for managing subscriptions visually
+- 🌍 **New:** Support for multiple email providers beyond Gmail
 
 ## Prerequisites
 
 - Python 3.7 or higher
-- A Gmail account
-- Gmail App Password (2FA must be enabled)
+- A valid email account (Gmail, Outlook, Yahoo, iCloud, AOL, etc.)
+- Some providers require an **App Password** (Gmail, Yahoo, iCloud, AOL)
 
 ## Installation
 
@@ -33,19 +34,21 @@ cd email-unsubscriber
 pip install flask requests beautifulsoup4 email-validator
 ```
 
-## Gmail Setup
+## Email Provider Setup
 
-Before using the tool, you need to set up Gmail App Password:
+Depending on your email provider, you may need to enable IMAP access and generate an **App Password**:
 
-1. Go to your [Google Account Settings](https://myaccount.google.com/)
-2. Navigate to Security
-3. Enable 2-Step Verification if not already enabled
-4. Under "App passwords":
-   - Select "Mail" as the app
-   - Select "Other" as the device
-   - Give it a name (e.g., "Email Unsubscriber")
-   - Click "Generate"
-5. Save the 16-character password generated
+- **Gmail**: Go to your [Google Account Security](https://myaccount.google.com/) → App Passwords.
+- **Yahoo**: Visit [Yahoo Account Security](https://login.yahoo.com/account/security) → Generate App Password.
+- **Outlook/Hotmail**: Go to [Microsoft Account Security](https://account.live.com/proofs/AppPassword) → Create App Password.
+- **iCloud**: Visit [Apple ID Security](https://appleid.apple.com/) → Generate App Password.
+- **AOL**: Enable App Passwords in [AOL Account Security](https://login.aol.com/account/security).
+
+If your email provider is not listed, you can **manually set the IMAP server**:
+```python
+unsubscriber = EmailUnsubscriber("user@custommail.com", "password")
+unsubscriber.set_custom_imap("imap.custommail.com", 993)
+```
 
 ## Usage
 
@@ -59,8 +62,8 @@ python app.py
 http://127.0.0.1:5001
 ```
 
-3. Enter your Gmail address and the App Password you generated
-4. Click "Scan Emails" to start scanning for newsletters
+3. Enter your email address, select your provider, and enter the App Password.
+4. Click **Scan Emails** to start scanning for newsletters.
 
 ## **Dashboard Feature**
 
@@ -82,8 +85,8 @@ The tool now includes an **interactive dashboard** that provides a user-friendly
 ```python
 unsubscriber = EmailUnsubscriber(email_address: str, app_password: str)
 ```
-- `email_address`: Gmail address (must end with @gmail.com)
-- `app_password`: 16-character App Password from Google Account
+- `email_address`: Valid email address
+- `app_password`: App Password from the provider (if required)
 
 #### Methods
 
@@ -91,14 +94,11 @@ unsubscriber = EmailUnsubscriber(email_address: str, app_password: str)
 ```python
 def connect_to_email(self) -> imaplib.IMAP4_SSL:
     """
-    Establishes connection to Gmail's IMAP server
-    
+    Establishes connection to the email provider's IMAP server
     Returns:
         IMAP4_SSL: Connected mail object
-    
     Raises:
         ConnectionError: If connection or authentication fails
-        ValueError: If email is not a Gmail address
     """
 ```
 
@@ -106,20 +106,7 @@ def connect_to_email(self) -> imaplib.IMAP4_SSL:
 ```python
 def find_unsubscribe_links(self, num_emails: int = 50) -> List[Dict]:
     """
-    Scans Gmail inbox for newsletter subscriptions
-    
-    Args:
-        num_emails (int): Number of recent emails to scan
-    
-    Returns:
-        List[Dict]: List of dictionaries containing:
-            {
-                'sender': str,           # Email address of sender
-                'unsubscribe_link': str, # URL to unsubscribe
-                'method': str,           # 'header' or 'body'
-                'provider': str,         # Always 'Gmail'
-                'category': str          # Gmail category (e.g., 'Promotions')
-            }
+    Scans inbox for newsletter subscriptions
     """
 ```
 
@@ -128,18 +115,6 @@ def find_unsubscribe_links(self, num_emails: int = 50) -> List[Dict]:
 def get_subscription_stats(self) -> Dict:
     """
     Retrieves statistics about newsletter subscriptions
-    
-    Returns:
-        Dict: Statistics containing:
-            {
-                'total_promotional': int,    # Total promotional emails
-                'frequent_senders': Dict,    # Sender frequency count
-                'categories': {              # Emails by Gmail category
-                    'Promotions': int,
-                    'Updates': int,
-                    'Social': int
-                }
-            }
     """
 ```
 
@@ -148,35 +123,25 @@ def get_subscription_stats(self) -> Dict:
 def unsubscribe(self, link: str) -> bool:
     """
     Attempts to unsubscribe using provided link
-    
-    Args:
-        link (str): Unsubscribe URL from find_unsubscribe_links()
-    
-    Returns:
-        bool: True if unsubscribe request was successful (HTTP 200)
     """
 ```
 
 ## Security Notes
 
-- Never share your Gmail App Password
+- Never share your App Password
 - The tool stores credentials only in session memory
-- Always use App Passwords instead of your main Gmail password
 - The web interface is for development use only; additional security measures are needed for production
 
 ## Limitations
 
-- Currently supports Gmail accounts only
-- Requires IMAP access to be enabled in Gmail
 - Some unsubscribe links may require manual intervention
 - Success rate depends on how newsletters implement their unsubscribe functionality
 
 ## Future Improvements
 
-- [ ] OAuth2 authentication support
-- [ ] Support for other email providers
+- [ ] OAuth2 authentication support for secure login
+- [ ] Improved handling of provider-specific email categories
 - [ ] Batch unsubscribe operations
-- [ ] Email provider selection
 - [ ] Progress tracking for long operations
 - [ ] Subscription analytics and reporting
 - [ ] Browser extension integration
@@ -188,3 +153,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please open an issue in the GitHub repository.
+
