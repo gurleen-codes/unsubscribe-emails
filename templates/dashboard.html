@@ -7,140 +7,172 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <style>
-        .stat-card {
-            transition: all 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .header-gradient {
-            background: linear-gradient(90deg, #4f46e5 0%, #7e22ce 100%);
-        }
-        .custom-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            border-radius: 4px;
-            border: 2px solid #cbd5e0;
-            transition: all 0.2s ease;
-        }
-        .custom-checkbox:checked {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
-        }
-        .table-row {
-            transition: background-color 0.2s ease;
-        }
-        .table-row:hover {
-            background-color: #f9fafb;
-        }
-        .unsubscribe-btn {
-            transition: all 0.2s ease;
-            border-radius: 4px;
-            padding: 0.375rem 0.75rem;
-        }
-        .unsubscribe-btn:hover {
-            background-color: #fee2e2;
-        }
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+
+<body class="bg-gray-100 font-sans">
     <nav class="bg-white shadow-md py-4">
         <div class="container mx-auto px-6 flex items-center justify-between">
             <div class="flex items-center">
-                <span class="text-indigo-600 text-xl font-bold flex items-center">
-                    <i class="fas fa-inbox-out mr-2"></i>CleanInbox
-                </span>
+                <!-- Inbox Logo SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <span class="text-blue-600 text-xl font-bold">CleanInbox</span>
             </div>
             <div class="flex items-center space-x-4">
                 <button id="refresh-btn" class="px-4 py-2 rounded text-gray-700 hover:bg-gray-200 flex items-center">
-                    <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    <!-- Refresh Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh Data
                 </button>
                 <button id="logout-btn" class="px-4 py-2 rounded text-gray-700 hover:bg-gray-200 flex items-center">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                    <!-- Logout Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Logout
                 </button>
-                <span id="user-email" class="text-gray-600 text-sm flex items-center">
-                    <i class="fas fa-user-circle mr-2"></i>{{ email }}
-                </span>
+                <div class="flex items-center">
+                    <!-- Gmail Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="#DB4437">
+                        <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                    </svg>
+                    <span id="user-email" class="text-gray-600 text-sm">{{ email }}</span>
+                </div>
             </div>
         </div>
     </nav>
-
-    <div class="header-gradient text-white py-10 mb-8">
-        <div class="container mx-auto px-6">
-            <h1 class="text-3xl font-bold mb-2">Your Email Subscription Dashboard</h1>
-            <p class="text-indigo-100">Take control of your inbox and reclaim your digital peace of mind</p>
+    <div class="container mx-auto px-6 py-8">
+        <div id="loading" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
         </div>
-    </div>
-
-    <div class="container mx-auto px-6 pb-12">
-        <div id="loading" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
-                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mb-4"></div>
-                <p class="text-gray-700">Processing your inbox...</p>
+        
+        <!-- Connected Platforms Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Connected Email Platforms</h2>
+            <div class="flex space-x-6">
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full p-4 mb-2 mx-auto w-16 h-16 flex items-center justify-center">
+                        <!-- Gmail Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="#DB4437">
+                            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Gmail</p>
+                    <p class="text-xs text-green-600">Connected</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-gray-100 rounded-full p-4 mb-2 mx-auto w-16 h-16 flex items-center justify-center">
+                        <!-- Outlook Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="#0078D4">
+                            <path d="M23.9,5L14,0.1C13.9,0,13.8,0,13.6,0c-0.2,0-0.3,0-0.5,0.1L0.1,5C0.1,5.1,0,5.1,0,5.2v13.5 C0,19.5,0.5,20,1.3,20.2l13.2,3.7c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0l8.2-3.7c0.7-0.3,0.7-0.7,0.7-1.2V5.2 C24,5.1,24,5.1,23.9,5z M12,15.8c-2.7,0-4.9-2.2-4.9-4.9c0-2.7,2.2-4.9,4.9-4.9s4.9,2.2,4.9,4.9C16.9,13.6,14.7,15.8,12,15.8z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Outlook</p>
+                    <p class="text-xs text-blue-600 cursor-pointer">Connect</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-gray-100 rounded-full p-4 mb-2 mx-auto w-16 h-16 flex items-center justify-center">
+                        <!-- Yahoo Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="#6001D2">
+                            <path d="M12.4 21.1l-.5-1c-.1-.2-.1-.3-.1-.4s.1-.1.3-.1h.5c.2 0 .3 0 .3.1s-.1.3-.2.4l-.3 1zm6.2-2.5L12 5.1l-6.5 13.5h2.6l1.4-3.1h5.2l1.4 3.1h2.5zM10.3 13l1.8-3.8 1.7 3.8h-3.5zm13.7-9h-2l-6 4.1V0h-2v8.1L8 4H6l8 5.6L6 15.2h2l6-4.1v8.1h2v-8.1l6 4.1h2l-8-5.6 8-5.6z"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Yahoo</p>
+                    <p class="text-xs text-blue-600 cursor-pointer">Connect</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-gray-100 rounded-full p-4 mb-2 mx-auto w-16 h-16 flex items-center justify-center">
+                        <!-- Generic Email Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Other</p>
+                    <p class="text-xs text-blue-600 cursor-pointer">Connect</p>
+                </div>
             </div>
         </div>
-
+        
         <div class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Your Email Subscription Dashboard</h1>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow-md p-6 stat-card border-t-4 border-indigo-500">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Subscriptions Found</h3>
-                        <i class="fas fa-envelope text-2xl text-indigo-500"></i>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center mb-2">
+                        <!-- Subscriptions Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-700">Subscriptions Found</h3>
                     </div>
-                    <p id="total-subscriptions" class="text-4xl font-bold text-indigo-600">0</p>
+                    <p id="total-subscriptions" class="text-4xl font-bold text-blue-600">0</p>
                     <p class="text-sm text-gray-500 mt-2">from your inbox</p>
                 </div>
-                <div class="bg-white rounded-lg shadow-md p-6 stat-card border-t-4 border-emerald-500">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Successfully Unsubscribed</h3>
-                        <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center mb-2">
+                        <!-- Unsubscribed Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-700">Successfully Unsubscribed</h3>
                     </div>
-                    <p id="total-unsubscribed" class="text-4xl font-bold text-emerald-600">0</p>
+                    <p id="total-unsubscribed" class="text-4xl font-bold text-green-600">0</p>
                     <p class="text-sm text-gray-500 mt-2">from your inbox</p>
                 </div>
-                <div class="bg-white rounded-lg shadow-md p-6 stat-card border-t-4 border-violet-500">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Estimated Time Saved</h3>
-                        <i class="fas fa-clock text-2xl text-violet-500"></i>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center mb-2">
+                        <!-- Time Saved Icon SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-700">Estimated Time Saved</h3>
                     </div>
-                    <p id="time-saved" class="text-4xl font-bold text-violet-600">0 min</p>
+                    <p id="time-saved" class="text-4xl font-bold text-purple-600">0 min</p>
                     <p class="text-sm text-gray-500 mt-2">per month</p>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-10">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold text-gray-800">Subscription Management</h2>
-                    <div class="flex space-x-2">
-                        <button id="select-all-btn" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-gray-700 text-sm flex items-center">
-                            <i class="fas fa-check-square mr-2"></i> Select All
-                        </button>
-                        <button id="bulk-unsubscribe-btn" class="px-4 py-2 bg-red-100 rounded hover:bg-red-200 text-red-700 text-sm flex items-center">
-                            <i class="fas fa-ban mr-2"></i> Bulk Unsubscribe
-                        </button>
+        <!-- Before/After Visualization -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-10">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Your Inbox Transformation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-md font-medium text-gray-700 mb-2">Before CleanInbox</h3>
+                    <div class="border border-gray-300 rounded p-2 h-48 relative bg-gray-200 flex items-center justify-center">
+                        <div class="flex flex-col items-center">
+                            <!-- Cluttered Inbox SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <circle cx="18" cy="6" r="3" fill="red" />
+                                <text x="18" y="7" text-anchor="middle" fill="white" font-size="2.5" font-weight="bold">!</text>
+                            </svg>
+                            <div class="text-gray-600">Cluttered Inbox</div>
+                        </div>
+                        <div class="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs rounded-bl">152 unread</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-md font-medium text-gray-700 mb-2">After CleanInbox</h3>
+                    <div class="border border-gray-300 rounded p-2 h-48 relative bg-gray-200 flex items-center justify-center">
+                        <div class="flex flex-col items-center">
+                            <!-- Clean Inbox SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                            </svg>
+                            <div class="text-gray-600">Clean Inbox</div>
+                        </div>
+                        <div class="absolute top-0 right-0 bg-green-500 text-white px-2 py-1 text-xs rounded-bl">12 unread</div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Subscription Management</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -153,63 +185,41 @@
                         </tr>
                     </thead>
                     <tbody id="subscription-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Table content will be populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
-            <div id="empty-state" class="hidden p-12 text-center">
-                <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
-                <h3 class="text-xl font-medium text-gray-700 mb-2">No subscriptions found</h3>
-                <p class="text-gray-500 mb-4">We couldn't find any newsletter subscriptions in your inbox.</p>
-                <button id="scan-again-btn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Scan Again
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-100">
-            <div class="flex items-start">
-                <div class="mr-4 text-indigo-500 text-xl">
-                    <i class="fas fa-lightbulb"></i>
-                </div>
-                <div>
-                    <h3 class="font-medium text-indigo-800 mb-1">Pro Tip</h3>
-                    <p class="text-indigo-700 text-sm">
-                        Unsubscribing from newsletters can reduce your email volume by up to 80%. 
-                        For the best results, scan your inbox regularly to catch new subscriptions.
-                    </p>
-                </div>
-            </div>
         </div>
     </div>
-
-    <footer class="bg-gray-800 text-white py-6">
-        <div class="container mx-auto px-6">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <span class="font-bold text-lg">CleanInbox</span>
-                    <p class="text-gray-400 text-sm">Take back control of your inbox</p>
-                </div>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-white">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="mt-4 text-center text-gray-400 text-xs">
-                &copy; 2025 CleanInbox. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
     <script>
         let subscriptions = []; // Global variable to store subscriptions data
+        
+        // Category icons as SVG strings
+        const categoryIcons = {
+            "Promotions": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                          </svg>`,
+            "Social": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>`,
+            "Updates": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                       </svg>`,
+            "Forums": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>`,
+            "Shopping": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>`,
+            "Finance": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                       </svg>`,
+            "Travel": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>`,
+            "Unknown": `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                       </svg>`
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardData();
@@ -217,11 +227,6 @@
             document.getElementById('logout-btn').addEventListener('click', () => {
                 window.location.href = '/';
             });
-            
-            // Add these event listeners for the new buttons
-            document.getElementById('select-all-btn')?.addEventListener('click', selectAllSubscriptions);
-            document.getElementById('bulk-unsubscribe-btn')?.addEventListener('click', bulkUnsubscribe);
-            document.getElementById('scan-again-btn')?.addEventListener('click', loadDashboardData);
         });
 
         async function loadDashboardData() {
@@ -234,14 +239,6 @@
                 document.getElementById('total-unsubscribed').textContent = response.data.totalUnsubscribed || 0;
                 document.getElementById('time-saved').textContent = `${response.data.timeSaved || 0} min`;
                 populateSubscriptionTable(subscriptions);
-                
-                // Show empty state if needed
-                const emptyState = document.getElementById('empty-state');
-                if (subscriptions.length === 0) {
-                    emptyState.classList.remove('hidden');
-                } else {
-                    emptyState.classList.add('hidden');
-                }
             } catch (error) {
                 console.error('Error loading data:', error);
                 alert('Failed to load dashboard data. Please try again.');
@@ -253,97 +250,35 @@
         function populateSubscriptionTable(subscriptions) {
             const tableBody = document.getElementById('subscription-table-body');
             tableBody.innerHTML = "";
-            
+            if (subscriptions.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='5' class='text-center text-gray-500'>No subscriptions found.</td></tr>";
+                return;
+            }
             subscriptions.forEach((sub, index) => {
+                const category = sub.category || "Unknown";
+                const categoryIcon = categoryIcons[category] || categoryIcons["Unknown"];
                 const row = document.createElement('tr');
-                row.className = 'table-row';
-                
-                // Determine badge color based on category
-                let badgeColor = 'bg-gray-100 text-gray-800';
-                if (sub.category === 'Promotions') {
-                    badgeColor = 'bg-purple-100 text-purple-800';
-                } else if (sub.category === 'Updates') {
-                    badgeColor = 'bg-blue-100 text-blue-800';
-                } else if (sub.category === 'Social') {
-                    badgeColor = 'bg-green-100 text-green-800';
-                }
-                
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="custom-checkbox subscription-check" data-index="${index}">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td><input type="checkbox" class="subscription-check" data-index="${index}"></td>
+                    <td>${sub.sender}</td>
+                    <td>
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
-                                ${sub.sender.charAt(0).toUpperCase()}
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${sub.sender}</div>
-                            </div>
+                            ${categoryIcon}
+                            <span class="ml-2">${category}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeColor}">
-                            ${sub.category || "Unknown"}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${sub.last_received || "N/A"}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button class="unsubscribe-btn text-red-600 hover:text-red-900" data-index="${index}">
-                            ${sub.unsubscribe_link ? '<i class="fas fa-times-circle mr-1"></i> Unsubscribe' : '<i class="fas fa-external-link-alt mr-1"></i> Manual Unsubscribe'}
+                    <td>${sub.last_received || "N/A"}</td>
+                    <td>
+                        <button class="text-red-600 hover:text-red-900 unsubscribe-btn flex items-center" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            ${sub.unsubscribe_link ? 'Unsubscribe' : 'Manual Unsubscribe'}
                         </button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
-            
-            // Add event listeners to the newly created buttons
-            document.querySelectorAll('.unsubscribe-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    unsubscribeFromNewsletter(index);
-                });
-            });
-        }
-        
-        function selectAllSubscriptions() {
-            const checkboxes = document.querySelectorAll('.subscription-check');
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = !allChecked;
-            });
-        }
-        
-        function bulkUnsubscribe() {
-            const selected = [];
-            document.querySelectorAll('.subscription-check:checked').forEach(checkbox => {
-                selected.push(parseInt(checkbox.getAttribute('data-index')));
-            });
-            
-            if (selected.length === 0) {
-                alert('Please select at least one subscription to unsubscribe from.');
-                return;
-            }
-            
-            if (confirm(`Are you sure you want to unsubscribe from ${selected.length} newsletters?`)) {
-                // Here you would implement the actual bulk unsubscribe functionality
-                console.log('Unsubscribing from:', selected.map(i => subscriptions[i].sender).join(', '));
-                alert(`Successfully unsubscribed from ${selected.length} newsletters!`);
-                loadDashboardData(); // Refresh the data
-            }
-        }
-        
-        function unsubscribeFromNewsletter(index) {
-            const subscription = subscriptions[index];
-            if (confirm(`Are you sure you want to unsubscribe from ${subscription.sender}?`)) {
-                // Here you would implement the actual unsubscribe functionality
-                console.log('Unsubscribing from:', subscription.sender);
-                alert(`Successfully unsubscribed from ${subscription.sender}!`);
-                loadDashboardData(); // Refresh the data
-            }
         }
     </script>
 </body>

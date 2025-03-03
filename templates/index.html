@@ -3,157 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Unsubscriber</title>
+    <title>CleanInbox - Unsubscribe with Ease</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .provider-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .provider-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .provider-card.selected {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .header-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        .header-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 70px;
+        }
+        .header-wave .shape-fill {
+            fill: #FFFFFF;
+        }
+        .app-screenshot {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        .login-form {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8">Email Unsubscriber</h1>
-        
-        <!-- Login Form -->
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
-            <form id="emailForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
-                    <input type="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+<body class="bg-gray-50 font-sans">
+    <header class="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16 md:py-24">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center justify-between">
+                <div class="mb-10 lg:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">Clean Your Inbox, Reclaim Your Time</h1>
+                    <p class="text-xl text-indigo-100 mb-8 max-w-lg">Automatically find and unsubscribe from unwanted newsletters with just a few clicks.</p>
+                    <div class="flex space-x-4">
+                        <div class="bg-white bg-opacity-25 rounded-lg px-4 py-2 flex items-center">
+                            <i class="fas fa-check-circle text-green-400 mr-2"></i>
+                            <span>100% Secure</span>
+                        </div>
+                        <div class="bg-white bg-opacity-25 rounded-lg px-4 py-2 flex items-center">
+                            <i class="fas fa-shield-alt text-green-400 mr-2"></i>
+                            <span>Privacy First</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <p class="mt-1 text-xs text-gray-500">
-                        Use an **App Password** if your provider requires it.  
-                        For Google, go <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-blue-600 hover:underline">here</a>.  
-                        For Yahoo, Outlook, iCloud, and AOL, check their account security settings.
-                    </p>
+                <div class="w-full max-w-md floating">
+                    <img src="/static/images/cleaninbox_visual.svg" alt="Dashboard Preview" class="app-screenshot">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Email Provider</label>
-                    <select id="emailProvider" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        <option value="gmail.com">Gmail</option>
-                        <option value="outlook.com">Outlook</option>
-                        <option value="yahoo.com">Yahoo</option>
-                        <option value="icloud.com">iCloud</option>
-                        <option value="custom">Custom Provider</option>
-                    </select>
+            </div>
+        </div>
+        <div class="header-wave">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-16">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                <div class="md:flex">
+                    <div class="md:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600 p-12 text-white">
+                        <h2 class="text-3xl font-bold mb-6">How It Works</h2>
+                        <ol class="space-y-6">
+                            <li class="flex">
+                                <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-white text-indigo-600 font-bold mr-4">1</div>
+                                <div>
+                                    <h3 class="font-medium text-xl mb-1">Connect Your Email</h3>
+                                    <p class="text-indigo-100">Securely connect your email account with read-only access.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-white text-indigo-600 font-bold mr-4">2</div>
+                                <div>
+                                    <h3 class="font-medium text-xl mb-1">Discover Subscriptions</h3>
+                                    <p class="text-indigo-100">We scan your inbox for newsletter and promotional emails.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-white text-indigo-600 font-bold mr-4">3</div>
+                                <div>
+                                    <h3 class="font-medium text-xl mb-1">Unsubscribe Easily</h3>
+                                    <p class="text-indigo-100">One-click unsubscribe from emails you no longer want.</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="md:w-1/2 p-12">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-6">Get Started</h2>
+                        <form id="login-form" class="space-y-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">Email Provider</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center selected" data-provider="gmail">
+                                        <img src="{{ url_for('static', filename='images/gmail.svg') }}" alt="Gmail" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">Gmail</span>
+                                    </div>
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center" data-provider="outlook">
+                                        <img src="{{ url_for('static', filename='images/outlook.svg') }}" alt="Outlook" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">Outlook</span>
+                                    </div>
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center" data-provider="yahoo">
+                                        <img src="{{ url_for('static', filename='images/yahoo.svg') }}" alt="Yahoo" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">Yahoo</span>
+                                    </div>
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center" data-provider="icloud">
+                                        <img src="{{ url_for('static', filename='images/icloud.svg') }}" alt="iCloud" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">iCloud</span>
+                                    </div>
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center" data-provider="aol">
+                                        <img src="{{ url_for('static', filename='images/aol.svg') }}" alt="AOL" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">AOL</span>
+                                    </div>
+                                    <div class="provider-card border rounded-lg p-4 flex flex-col items-center" data-provider="other">
+                                        <img src="{{ url_for('static', filename='images/email_generic.svg') }}" alt="Other" class="h-8 w-8 mb-2">
+                                        <span class="text-sm">Other</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-gray-700 font-medium mb-2">Email Address</label>
+                                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            
+                            <div>
+                                <label for="password" class="block text-gray-700 font-medium mb-2">App Password</label>
+                                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                <p class="text-sm text-gray-500 mt-2">
+                                    Use an <a href="#" class="text-indigo-600 hover:underline">App Password</a> if your provider requires it.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label for="num_emails" class="block text-gray-700 font-medium mb-2">Number of Emails to Scan</label>
+                                <select id="num_emails" name="num_emails" class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="50">50 emails</option>
+                                    <option value="100">100 emails</option>
+                                    <option value="200">200 emails</option>
+                                    <option value="500">500 emails</option>
+                                </select>
+                            </div>
+                            
+                            <div class="bg-indigo-50 p-4 rounded-lg">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-lock text-indigo-600"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-indigo-800">Your data is secure</h3>
+                                        <p class="text-xs text-indigo-700">
+                                            We don't store your password and use secure connections to access your email.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transform transition hover:-translate-y-1">
+                                Scan My Inbox
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Why People Love CleanInbox</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"I was receiving over 50 promotional emails daily. CleanInbox helped me unsubscribe from 90% of them in just minutes!"</p>
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">S</div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-gray-900">Sarah J.</h3>
+                            <p class="text-sm text-gray-500">Gmail User</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Number of Emails to Scan</label>
-                    <input type="number" id="numEmails" value="50" min="1" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"The bulk unsubscribe feature is a game-changer. I cleaned up years of newsletter subscriptions in one afternoon."</p>
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">M</div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-gray-900">Michael T.</h3>
+                            <p class="text-sm text-gray-500">Outlook User</p>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Scan Emails
-                </button>
-            </form>
+                
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star-half-alt text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"I was skeptical about giving access to my email, but their security measures convinced me. Now my inbox is finally manageable!"</p>
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">A</div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-gray-900">Aisha K.</h3>
+                            <p class="text-sm text-gray-500">Yahoo User</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <!-- Results Section -->
-        <div id="results" class="hidden max-w-4xl mx-auto">
-            <h2 class="text-2xl font-semibold mb-4">Unsubscribe Options</h2>
-            <div id="resultsList" class="space-y-4"></div>
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">CleanInbox</h3>
+                    <p class="text-gray-400">Take back control of your inbox and reclaim your digital peace of mind.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Data Security</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2025 CleanInbox. All rights reserved.</p>
+            </div>
         </div>
-
-        <!-- Loading Spinner -->
-        <div id="loading" class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-        </div>
-    </div>
+    </footer>
 
     <script>
-        document.getElementById('emailForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log("Submitting form...");
-
-            const loading = document.getElementById('loading');
-            const results = document.getElementById('results');
-            const resultsList = document.getElementById('resultsList');
-
-            loading.classList.remove('hidden');
-            results.classList.add('hidden');
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const numEmails = parseInt(document.getElementById('numEmails').value, 10);
-
-            console.log("Captured values:", { email, password, numEmails });
-
-            try {
-                const response = await axios.post('/scan', { email, password, num_emails: numEmails });
-                console.log("Response from API:", response.data);
-
-                if (response.data.redirect) {
-                    window.location.href = response.data.redirect;
-                    return;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Provider card selection
+            const providerCards = document.querySelectorAll('.provider-card');
+            providerCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    providerCards.forEach(c => c.classList.remove('selected'));
+                    // Add selected class to clicked card
+                    this.classList.add('selected');
+                    
+                    // You can store the selected provider in a hidden input or variable
+                    const provider = this.getAttribute('data-provider');
+                    console.log('Selected provider:', provider);
+                    
+                    // Update the UI based on the selected provider
+                    updateProviderSpecificUI(provider);
+                });
+            });
+            
+            // Form submission
+            const loginForm = document.getElementById('login-form');
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Connecting...';
+                submitButton.disabled = true;
+                
+                // Get selected provider
+                const selectedProvider = document.querySelector('.provider-card.selected').getAttribute('data-provider');
+                
+                // Get form data
+                const formData = {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value,
+                    num_emails: parseInt(document.getElementById('num_emails').value, 10),
+                    provider: document.querySelector('.provider-card.selected')?.getAttribute('data-provider') || "unknown"
+                };
+                
+                // Add custom IMAP settings if provider is "custom"
+                if (selectedProvider === "custom") {
+                    formData.custom_server = document.getElementById('custom_server').value;
+                    formData.custom_port = document.getElementById('custom_port').value;
                 }
-
-                resultsList.innerHTML = '';
-
-                if (!response.data.data || response.data.data.length === 0) {
-                    resultsList.innerHTML = '<div class="bg-white rounded-lg shadow-md p-4">No unsubscribe links found.</div>';
-                } else {
-                    response.data.data.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'bg-white rounded-lg shadow-md p-4';
-                        
-                        let isValidLink = typeof item.unsubscribe_link === 'string' &&
-                                         item.unsubscribe_link.startsWith('http') &&
-                                         !item.unsubscribe_link.includes('<') &&
-                                         !item.unsubscribe_link.includes('class=');
-
-                        let senderName = item.sender.replace(/<.*?>|"/g, '').trim();
-
-                        const flexContainer = document.createElement('div');
-                        flexContainer.className = 'flex justify-between items-center';
-
-                        const senderInfo = document.createElement('div');
-                        const senderTitle = document.createElement('h3');
-                        senderTitle.className = 'text-lg font-medium';
-                        senderTitle.textContent = senderName;
-
-                        const unsubButton = document.createElement('button');
-                        unsubButton.textContent = 'Unsubscribe';
-                        unsubButton.className = 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2';
-
-                        unsubButton.addEventListener('click', () => {
-                            if (isValidLink) {
-                                unsubscribe(item.unsubscribe_link, senderName);
-                            } else {
-                                alert(`Cannot automatically unsubscribe from ${senderName}. Please check your inbox for an unsubscribe link.`);
-                            }
+                
+                // Store credentials in session
+                fetch('/store_credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: formData.email,
+                        password: formData.password
+                    }),
+                })
+                .then(response => response.json())
+                .then(sessionResponse => {
+                    if (sessionResponse.status === 'success') {
+                        // Submit form data for scanning
+                        return fetch('/scan', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData),
                         });
+                    } else {
+                        throw new Error('Failed to store credentials');
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Server Response:", data);  // Debugging
 
-                        senderInfo.appendChild(senderTitle);
-                        flexContainer.appendChild(senderInfo);
-                        flexContainer.appendChild(unsubButton);
-
-                        card.appendChild(flexContainer);
-                        resultsList.appendChild(card);
-                    });
+                    if (Array.isArray(data.data)) {
+                        // Redirect to dashboard after successful scan
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert("Error: " + (data.error || data.message || 'Unexpected response format.'));
+                        submitButton.innerHTML = originalText;
+                        submitButton.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    alert('Failed to connect. Please try again.');
+                    submitButton.innerHTML = originalText;
+                    submitButton.disabled = false;
+                });
+            });
+            // Update the UI based on the selected provider
+            function updateProviderSpecificUI(provider) {
+                const helpText = document.querySelector('label[for="password"] + input + p');
+                
+                switch(provider) {
+                    case 'gmail':
+                        helpText.innerHTML = 'Use an <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Gmail accounts with 2FA enabled.';
+                        break;
+                    case 'outlook':
+                        helpText.innerHTML = 'Use an <a href="https://account.live.com/proofs/Manage" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Outlook accounts with 2FA enabled.';
+                        break;
+                    case 'yahoo':
+                        helpText.innerHTML = 'Use an <a href="https://login.yahoo.com/account/security" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Yahoo accounts with 2FA enabled.';
+                        break;
+                    case 'icloud':
+                        helpText.innerHTML = 'Use an <a href="https://appleid.apple.com/account/manage" target="_blank" class="text-indigo-600 hover:underline">App-Specific Password</a> for iCloud accounts.';
+                        break;
+                    default:
+                        helpText.innerHTML = 'Use an <a href="#" class="text-indigo-600 hover:underline">App Password</a> if your provider requires it.';
                 }
-
-                results.classList.remove('hidden');
-            } catch (error) {
-                console.error("Error sending request:", error);
-                alert(error.response?.data?.message || 'An error occurred');
-            } finally {
-                loading.classList.add('hidden');
             }
         });
-
-        async function unsubscribe(link, sender) {
-            const loadingEl = document.getElementById('loading');
-            loadingEl.classList.remove('hidden');
-            
-            try {
-                const response = await axios.post('/unsubscribe', { link, sender });
-                alert(response.data.message);
-            } catch (error) {
-                alert(error.response?.data?.message || `Failed to unsubscribe from ${sender}`);
-            } finally {
-                loadingEl.classList.add('hidden');
-            }
-        }
     </script>
 </body>
 </html>

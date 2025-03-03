@@ -1,6 +1,7 @@
-# Email Unsubscriber
+# CleanInbox (formerly Email Unsubscriber)
 
 A Python-based tool that helps you bulk unsubscribe from unwanted email newsletters and subscriptions. Now supports multiple email providers, including Gmail, Outlook, Yahoo, iCloud, AOL, and custom IMAP providers.
+> **Note:** This project has been renamed from "Email Unsubscriber" to "CleanInbox", but the repository URL remains unchanged for compatibility purposes.
 
 ## Features
 
@@ -10,8 +11,10 @@ A Python-based tool that helps you bulk unsubscribe from unwanted email newslett
 - 🗑️ One-click unsubscribe from multiple newsletters
 - 📁 Focuses on promotional emails across providers
 - 🔄 Supports both header-based and in-body unsubscribe links
-- 🖥️ **New:** Interactive dashboard for managing subscriptions visually
-- 🌍 **New:** Support for multiple email providers beyond Gmail
+- 🖥️ Interactive dashboard for managing subscriptions visually
+- 🌍 Support for multiple email providers beyond Gmail
+- 📈 **New:** Categorized subscription analytics and statistics
+- 🧹 **New:** Bulk unsubscribe feature for faster inbox cleaning
 
 ## Prerequisites
 
@@ -64,18 +67,21 @@ http://127.0.0.1:5001
 
 3. Enter your email address, select your provider, and enter the App Password.
 4. Click **Scan Emails** to start scanning for newsletters.
+5. You'll be redirected to the dashboard where you can manage and unsubscribe from your subscriptions.
 
 ## **Dashboard Feature**
 
-The tool now includes an **interactive dashboard** that provides a user-friendly way to manage your subscriptions.
+The tool includes a comprehensive **interactive dashboard** that provides a user-friendly way to manage your subscriptions.
 
 ### **How to Use the Dashboard**
 1. After scanning, the dashboard displays:
    - **Total subscriptions found**
+   - **Categories of subscriptions**
    - **Successfully unsubscribed emails**
-   - **Estimated time saved**
-2. You can select emails and click **Unsubscribe** to remove them from mailing lists.
-3. The dashboard dynamically updates as new emails are scanned.
+   - **Subscription statistics**
+2. You can select multiple emails and use the bulk unsubscribe feature to remove them from mailing lists.
+3. The dashboard dynamically updates as new emails are scanned or unsubscribed.
+4. View categorized statistics to understand your email subscription patterns.
 
 ## API Documentation
 
@@ -134,17 +140,33 @@ def unsubscribe(self, link: str) -> bool:
 
 ## Limitations
 
-- Some unsubscribe links may require manual intervention
 - Success rate depends on how newsletters implement their unsubscribe functionality
+
+## 🔧 Troubleshooting
+
+### ❌ `TypeError: bad operand type for unary -: 'str'`
+✅ **Fix:** Ensure `num_emails` is an integer in both frontend and backend.
+
+### ❌ `500 Internal Server Error`
+✅ **Fix:** Check Flask logs (`flask run --debug`) for the exact error.
+
+### ❌ `200 OK but "An error occurred" in UI`
+✅ **Fix:** The backend response format has changed. Ensure `data.data` is checked instead of `data.status`.
+
+### ❌ `"Failed to load resource: 404 NOT FOUND"`
+✅ **Fix:** Ensure static assets (SVG files) are inside `static/images/` and referenced correctly.
+
 
 ## Future Improvements
 
 - [ ] OAuth2 authentication support for secure login
 - [ ] Improved handling of provider-specific email categories
-- [ ] Batch unsubscribe operations
+- [x] Batch unsubscribe operations
 - [ ] Progress tracking for long operations
-- [ ] Subscription analytics and reporting
+- [x] Subscription analytics and reporting
 - [ ] Browser extension integration
+- [ ] Email categorization machine learning model
+- [ ] Scheduled re-scanning of the inbox
 
 ## License
 
@@ -153,4 +175,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please open an issue in the GitHub repository.
+
+
 

@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, session, redirect, send_from_directory
 from email_unsubscriber import EmailUnsubscriber
 import os
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.secret_key = os.urandom(24)  # For session management
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory(app.static_folder, filename)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -12,30 +16,67 @@ def index():
 
 @app.route('/scan', methods=['POST'])
 def scan_emails():
-    # Change to get JSON data instead of form data
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    num_emails = int(data.get('num_emails', 50))
-    
     try:
-        unsubscriber = EmailUnsubscriber(email, password)
-        unsubscribe_links = unsubscriber.find_unsubscribe_links(num_emails)
+        data = request.json
+        email_address = data['email']
+        password = data['password']
+        provider = data['provider']
         
-        # Store credentials in session for later use
-        session['email'] = email
+        # Store credentials in session for future API calls
+        session['email'] = email_address
         session['password'] = password
+        session['provider'] = provider
         
+        # Store custom IMAP settings if provided
+        if provider == "custom":
+            session['custom_server'] = data['custom_server']
+            session['custom_port'] = data['custom_port']
+        
+        unsubscriber = EmailUnsubscriber(email_address, password)
+        
+        # If user selects "Custom Provider", use their custom IMAP settings
+        if provider == "custom":
+            unsubscriber.set_custom_imap(data['custom_server'], int(data['custom_port']))
+        
+        unsubscribe_data = unsubscriber.find_unsubscribe_links(num_emails=int(data.get('num_emails', 50)))
+        
+        # Process the data to match dashboard expectations
+        processed_data = []
+        for item in unsubscribe_data:
+            # Ensure each item has expected fields or default values
+            processed_item = {
+                'sender': item.get('sender', 'Unknown Sender'),
+                'category': item.get('category', 'Unknown'),
+                'last_received': item.get('date', 'N/A'),
+                'unsubscribe_link': item.get('unsubscribe_link', '')
+            }
+            processed_data.append(processed_item)
+        
+        # Include redirect information and additional stats
         return jsonify({
             'status': 'success',
-            'data': unsubscribe_links,
-            'redirect': '/dashboard'  # Add this line to tell the frontend to redirect
+            'data': processed_data,
+            'redirect': '/dashboard',
+            'totalUnsubscribed': 0,  # Initial value, will be updated as user unsubscribes
+            'timeSaved': calculate_time_saved(len(processed_data))  # You'll need to implement this function
         })
     except Exception as e:
         return jsonify({
             'status': 'error',
             'message': str(e)
-        }), 400
+        }), 500
+
+# Helper function to estimate time saved based on number of subscriptions
+def calculate_time_saved(num_subscriptions):
+    # Assuming each email takes ~30 seconds to process manually
+    return num_subscriptions * 0.5  # Return time in minutes
+
+@app.route('/store_credentials', methods=['POST'])
+def store_credentials():
+    data = request.get_json()
+    session['email'] = data.get('email')
+    session['password'] = data.get('password')
+    return jsonify({'status': 'success'})
 
 @app.route('/unsubscribe', methods=['POST'])
 def unsubscribe():
