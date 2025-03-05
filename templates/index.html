@@ -400,19 +400,22 @@
                 
                 switch(provider) {
                     case 'gmail':
-                        helpText.innerHTML = 'Use an <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Gmail accounts with 2FA enabled.';
+                        helpText.innerHTML = 'Use an <a href="https://support.google.com/mail/answer/185833?hl=en" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Gmail accounts with 2FA enabled.';
                         break;
                     case 'outlook':
-                        helpText.innerHTML = 'Use an <a href="https://account.live.com/proofs/Manage" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Outlook accounts with 2FA enabled.';
+                        helpText.innerHTML = 'Use an <a href="https://support.microsoft.com/en-us/account-billing/how-to-get-and-use-app-passwords-5896ed9b-4263-e681-128a-a6f2979a7944" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Outlook accounts with 2FA enabled.';
                         break;
                     case 'yahoo':
-                        helpText.innerHTML = 'Use an <a href="https://login.yahoo.com/account/security" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Yahoo accounts with 2FA enabled.';
+                        helpText.innerHTML = 'Use an <a href="https://help.yahoo.com/kb/SLN15241.html?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS8&guce_referrer_sig=AQAAAHsmf4c6bh_anMELGpm5o6U1ccySusJxYT5pKmfuHqYCNVzqkNaJrsyEHYMo3zH1BdFQ1jm5aLhjfNeZ_iXTcZmhMUyIyIHPyZBFfjz3KFk5edMPYS6iPfAQojhgrm8EJspfYyObSpSYM2t4veuKlNhJJuqsjhDf6VYOk0YCF5ue" target="_blank" class="text-indigo-600 hover:underline">App Password</a> for Yahoo accounts with 2FA enabled.';
                         break;
                     case 'icloud':
-                        helpText.innerHTML = 'Use an <a href="https://appleid.apple.com/account/manage" target="_blank" class="text-indigo-600 hover:underline">App-Specific Password</a> for iCloud accounts.';
+                        helpText.innerHTML = 'Use an <a href="https://support.apple.com/en-ca/102654" target="_blank" class="text-indigo-600 hover:underline">App-Specific Password</a> for iCloud accounts.';
+                        break;
+                    case 'aol':
+                        helpText.innerHTML = 'Use an <a href="https://help.aol.com/articles/Create-and-manage-app-password" target="_blank" class="text-indigo-600 hover:underline">App-Specific Password</a> for AOL accounts.';
                         break;
                     default:
-                        helpText.innerHTML = 'Use an <a href="#" class="text-indigo-600 hover:underline">App Password</a> if your provider requires it.';
+                        helpText.innerHTML = 'Use an App Password if your provider requires it.';
                 }
             }
         });
