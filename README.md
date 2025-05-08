@@ -1,6 +1,7 @@
 # CleanInbox (formerly Email Unsubscriber)
 
 A Python-based tool that helps you bulk unsubscribe from unwanted email newsletters and subscriptions. Now supports multiple email providers, including Gmail, Outlook, Yahoo, iCloud, AOL, and custom IMAP providers.
+
 > **Note:** This project has been renamed from "Email Unsubscriber" to "CleanInbox", but the repository URL remains unchanged for compatibility purposes.
 
 ## Features
@@ -15,6 +16,9 @@ A Python-based tool that helps you bulk unsubscribe from unwanted email newslett
 - 🌍 Support for multiple email providers beyond Gmail
 - 📈 **New:** Categorized subscription analytics and statistics
 - 🧹 **New:** Bulk unsubscribe feature for faster inbox cleaning
+- 🔧 **New:** Improved dashboard with visual subscription management
+- 🛠️ **New:** Fixed functionality for unsubscribe buttons
+- 📦 **New:** Better session management for large data sets
 
 ## Prerequisites
 
@@ -34,8 +38,41 @@ cd email-unsubscriber
 2. Install required packages:
 
 ```bash
-pip install flask requests beautifulsoup4 email-validator
+pip install -r requirements.txt
 ```
+
+## Installation Notes
+
+### Basic vs. Full Installation
+
+The application can be installed in two modes:
+
+**Basic Installation:** The core functionality will work with just the basic dependencies in requirements.txt.
+
+**Full Installation:** For enhanced features like ML-based categorization and advanced analytics, additional libraries are needed.
+
+If you encounter issues installing scikit-learn or other ML libraries (especially on macOS or newer Python versions), you can still use the application with reduced functionality:
+
+```bash
+# Install core dependencies first
+pip install flask beautifulsoup4 requests python-dotenv oauthlib flask-session
+
+# Then optionally try to install ML dependencies
+pip install pandas numpy
+pip install scikit-learn
+```
+
+The application will automatically detect which libraries are available and adjust its features accordingly:
+
+**When scikit-learn is not available:**
+- The application will use simple keyword-based categorization instead of ML-based categorization
+- Categories will still be assigned, but without confidence scores
+
+**When pandas is not available:**
+- The application will provide simplified analytics without trend analysis
+- Basic subscription counts and time-saving estimates will still be available
+
+This ensures that core unsubscription functionality works regardless of which libraries are installed.
 
 ## Email Provider Setup
 
@@ -62,26 +99,56 @@ python app.py
 
 2. Open your browser and go to:
 ```
-http://127.0.0.1:5001
+http://127.0.0.1:5002
 ```
+**Note:** The server now runs on port 5002 by default.
 
 3. Enter your email address, select your provider, and enter the App Password.
 4. Click **Scan Emails** to start scanning for newsletters.
 5. You'll be redirected to the dashboard where you can manage and unsubscribe from your subscriptions.
 
-## **Dashboard Feature**
+## **Dashboard Features**
 
 The tool includes a comprehensive **interactive dashboard** that provides a user-friendly way to manage your subscriptions.
 
 ### **How to Use the Dashboard**
+
 1. After scanning, the dashboard displays:
    - **Total subscriptions found**
    - **Categories of subscriptions**
    - **Successfully unsubscribed emails**
    - **Subscription statistics**
+
 2. You can select multiple emails and use the bulk unsubscribe feature to remove them from mailing lists.
-3. The dashboard dynamically updates as new emails are scanned or unsubscribed.
-4. View categorized statistics to understand your email subscription patterns.
+
+3. The dashboard provides visual feedback when unsubscribing:
+   - Loading indicators during processing
+   - Success/failure status messages
+   - Updated count of unsubscribed emails
+
+4. The dashboard dynamically updates as new emails are scanned or unsubscribed.
+
+5. View categorized statistics to understand your email subscription patterns.
+
+## Advanced Features
+
+### Subscription Analytics
+
+The application includes an advanced analytics system to provide insights about your email subscriptions:
+
+- Category distribution of newsletters
+- Time trends showing when you received the most promotional emails
+- Identification of potential spam sources
+- Recommendations for which subscriptions to prioritize removing
+- Estimated time saved by unsubscribing
+
+### Session Management
+
+For users with many subscriptions, the application now includes improved session management:
+
+- Sessions are stored in a filesystem instead of cookies to handle large amounts of data
+- Session data is securely managed and automatically cleaned up
+- Performance optimizations for large inbox scanning
 
 ## API Documentation
 
@@ -137,12 +204,9 @@ def unsubscribe(self, link: str) -> bool:
 - Never share your App Password
 - The tool stores credentials only in session memory
 - The web interface is for development use only; additional security measures are needed for production
+- Session data is now stored in the filesystem rather than cookies for better security and performance
 
-## Limitations
-
-- Success rate depends on how newsletters implement their unsubscribe functionality
-
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### ❌ `TypeError: bad operand type for unary -: 'str'`
 ✅ **Fix:** Ensure `num_emails` is an integer in both frontend and backend.
@@ -156,17 +220,26 @@ def unsubscribe(self, link: str) -> bool:
 ### ❌ `"Failed to load resource: 404 NOT FOUND"`
 ✅ **Fix:** Ensure static assets (SVG files) are inside `static/images/` and referenced correctly.
 
+### ❌ `SubscriptionAnalytics` object has no attribute errors
+✅ **Fix:** Make sure the indentation in the `subscription_analytics.py` file is correct. All methods should be properly indented under the class.
+
+### ❌ Cookie size warning
+✅ **Fix:** The application now uses filesystem sessions instead of cookies to handle large amounts of data.
 
 ## Future Improvements
 
 - [ ] OAuth2 authentication support for secure login
 - [ ] Improved handling of provider-specific email categories
 - [x] Batch unsubscribe operations
-- [ ] Progress tracking for long operations
+- [x] Progress tracking for long operations
 - [x] Subscription analytics and reporting
 - [ ] Browser extension integration
 - [ ] Email categorization machine learning model
 - [ ] Scheduled re-scanning of the inbox
+- [ ] Mobile-responsive design
+- [ ] Multi-user support with user accounts
+- [ ] Comprehensive email analytics dashboard
+- [ ] Email content previewer
 
 ## License
 
@@ -175,6 +248,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please open an issue in the GitHub repository.
-
-
-

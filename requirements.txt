@@ -1,5 +1,10 @@
-flask
-beautifulsoup4
-requests
-python-dotenv
-
+# Core dependencies
+flask>=2.0.0
+python-dotenv>=0.15.0
+beautifulsoup4>=4.9.0
+requests>=2.25.0
+oauthlib>=3.1.0
+flask-session>=0.4.0
+scikit-learn>=0.24.0
+pandas>=1.0.0
+schedule>=1.0.0

@@ -220,25 +220,41 @@
                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                        </svg>`
         };
-
+    
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardData();
             document.getElementById('refresh-btn').addEventListener('click', loadDashboardData);
             document.getElementById('logout-btn').addEventListener('click', () => {
-                window.location.href = '/';
+                fetch('/api/logout', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        window.location.href = '/';
+                    })
+                    .catch(error => {
+                        console.error('Logout error:', error);
+                        window.location.href = '/';
+                    });
             });
         });
-
+    
         async function loadDashboardData() {
             const loading = document.getElementById('loading');
             loading.classList.remove('hidden');
             try {
+                console.log("Fetching subscription data...");
                 const response = await axios.get('/api/subscription_data');
-                subscriptions = response.data.subscriptions || [];
-                document.getElementById('total-subscriptions').textContent = subscriptions.length || 0;
-                document.getElementById('total-unsubscribed').textContent = response.data.totalUnsubscribed || 0;
-                document.getElementById('time-saved').textContent = `${response.data.timeSaved || 0} min`;
-                populateSubscriptionTable(subscriptions);
+                console.log("API response:", response.data);
+                
+                if (response.data && response.data.subscriptions) {
+                    subscriptions = response.data.subscriptions || [];
+                    document.getElementById('total-subscriptions').textContent = subscriptions.length || 0;
+                    document.getElementById('total-unsubscribed').textContent = response.data.totalUnsubscribed || 0;
+                    document.getElementById('time-saved').textContent = `${response.data.timeSaved || 0} min`;
+                    populateSubscriptionTable(subscriptions);
+                } else {
+                    console.error("Invalid API response format:", response.data);
+                    alert("Error: Invalid data format returned from server.");
+                }
             } catch (error) {
                 console.error('Error loading data:', error);
                 alert('Failed to load dashboard data. Please try again.');
@@ -246,29 +262,32 @@
                 loading.classList.add('hidden');
             }
         }
-
+    
         function populateSubscriptionTable(subscriptions) {
             const tableBody = document.getElementById('subscription-table-body');
             tableBody.innerHTML = "";
             if (subscriptions.length === 0) {
-                tableBody.innerHTML = "<tr><td colspan='5' class='text-center text-gray-500'>No subscriptions found.</td></tr>";
+                tableBody.innerHTML = "<tr><td colspan='5' class='text-center py-4 text-gray-500'>No subscriptions found.</td></tr>";
                 return;
             }
+            
             subscriptions.forEach((sub, index) => {
                 const category = sub.category || "Unknown";
                 const categoryIcon = categoryIcons[category] || categoryIcons["Unknown"];
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="checkbox" class="subscription-check" data-index="${index}"></td>
-                    <td>${sub.sender}</td>
-                    <td>
+                    <td class="px-6 py-4">
+                        <input type="checkbox" class="subscription-check" data-index="${index}">
+                    </td>
+                    <td class="px-6 py-4">${sub.sender}</td>
+                    <td class="px-6 py-4">
                         <div class="flex items-center">
                             ${categoryIcon}
                             <span class="ml-2">${category}</span>
                         </div>
                     </td>
-                    <td>${sub.last_received || "N/A"}</td>
-                    <td>
+                    <td class="px-6 py-4">${sub.last_received || "N/A"}</td>
+                    <td class="px-6 py-4">
                         <button class="text-red-600 hover:text-red-900 unsubscribe-btn flex items-center" data-index="${index}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -279,6 +298,174 @@
                 `;
                 tableBody.appendChild(row);
             });
+            
+            // Add event listeners to unsubscribe buttons
+            attachUnsubscribeButtonHandlers();
+        }
+        
+        function attachUnsubscribeButtonHandlers() {
+            // Attach click handlers to all unsubscribe buttons
+            const unsubscribeButtons = document.querySelectorAll('.unsubscribe-btn');
+            unsubscribeButtons.forEach(button => {
+                button.addEventListener('click', handleUnsubscribe);
+            });
+            
+            console.log(`Attached handlers to ${unsubscribeButtons.length} unsubscribe buttons`);
+        }
+        
+        async function handleUnsubscribe(event) {
+            const button = event.currentTarget;
+            const index = button.getAttribute('data-index');
+            const subscription = subscriptions[index];
+            
+            if (!subscription || !subscription.unsubscribe_link) {
+                alert("No unsubscribe link available for this subscription.");
+                return;
+            }
+            
+            // Show loading state
+            const originalText = button.innerHTML;
+            button.innerHTML = `
+                <svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+            `;
+            button.disabled = true;
+            
+            try {
+                console.log(`Unsubscribing from ${subscription.sender}...`);
+                const response = await axios.post('/unsubscribe', {
+                    link: subscription.unsubscribe_link,
+                    sender: subscription.sender
+                });
+                
+                console.log("Unsubscribe response:", response.data);
+                
+                if (response.data.status === 'success') {
+                    // Update the button to show success
+                    button.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Unsubscribed
+                    `;
+                    button.classList.remove('text-red-600', 'hover:text-red-900');
+                    button.classList.add('text-green-600');
+                    button.disabled = true;
+                    
+                    // Update the total unsubscribed count
+                    const totalUnsubscribed = document.getElementById('total-unsubscribed');
+                    const currentCount = parseInt(totalUnsubscribed.textContent || '0');
+                    totalUnsubscribed.textContent = currentCount + 1;
+                    
+                    // Update the time saved
+                    const timeSaved = document.getElementById('time-saved');
+                    const currentTime = parseInt(timeSaved.textContent || '0');
+                    timeSaved.textContent = `${currentTime + 2} min`; // Assume 2 min saved per unsubscribe
+                    
+                    // Show success message
+                    alert(`Successfully unsubscribed from ${subscription.sender}`);
+                } else {
+                    // Restore the original button state
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    alert(`Failed to unsubscribe: ${response.data.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Unsubscribe error:', error);
+                button.innerHTML = originalText;
+                button.disabled = false;
+                alert(`Error unsubscribing: ${error.message || 'Network error'}`);
+            }
+        }
+        
+        // Add support for bulk unsubscribe
+        function setupBulkUnsubscribe() {
+            const checkboxes = document.querySelectorAll('.subscription-check');
+            const bulkUnsubscribeBtn = document.getElementById('bulk-unsubscribe-btn');
+            
+            if (bulkUnsubscribeBtn) {
+                bulkUnsubscribeBtn.addEventListener('click', handleBulkUnsubscribe);
+            }
+            
+            // Update selected count when checkboxes change
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedCount);
+            });
+        }
+        
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.subscription-check:checked');
+            const bulkUnsubscribeBtn = document.getElementById('bulk-unsubscribe-btn');
+            
+            if (bulkUnsubscribeBtn) {
+                if (checkboxes.length > 0) {
+                    bulkUnsubscribeBtn.textContent = `Unsubscribe (${checkboxes.length})`;
+                    bulkUnsubscribeBtn.classList.remove('hidden');
+                } else {
+                    bulkUnsubscribeBtn.classList.add('hidden');
+                }
+            }
+        }
+        
+        async function handleBulkUnsubscribe() {
+            const checkboxes = document.querySelectorAll('.subscription-check:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one subscription to unsubscribe from.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to unsubscribe from ${checkboxes.length} subscriptions?`)) {
+                return;
+            }
+            
+            const bulkUnsubscribeBtn = document.getElementById('bulk-unsubscribe-btn');
+            const originalText = bulkUnsubscribeBtn.innerHTML;
+            bulkUnsubscribeBtn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+            `;
+            bulkUnsubscribeBtn.disabled = true;
+            
+            // Collect links for bulk unsubscribe
+            const links = [];
+            checkboxes.forEach(checkbox => {
+                const index = checkbox.getAttribute('data-index');
+                const subscription = subscriptions[index];
+                if (subscription && subscription.unsubscribe_link) {
+                    links.push({
+                        link: subscription.unsubscribe_link,
+                        sender: subscription.sender,
+                        email_id: subscription.email_id
+                    });
+                }
+            });
+            
+            try {
+                const response = await axios.post('/api/bulk_unsubscribe', { links });
+                
+                if (response.data.status === 'success') {
+                    const { succeeded, failed } = response.data.summary;
+                    alert(`Unsubscribe summary:\n- Successfully unsubscribed: ${succeeded}\n- Failed: ${failed}`);
+                    
+                    // Refresh the dashboard
+                    loadDashboardData();
+                } else {
+                    alert(`Bulk unsubscribe failed: ${response.data.message || 'Unknown error'}`);
+                    bulkUnsubscribeBtn.innerHTML = originalText;
+                    bulkUnsubscribeBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Bulk unsubscribe error:', error);
+                alert(`Error: ${error.message || 'Network error'}`);
+                bulkUnsubscribeBtn.innerHTML = originalText;
+                bulkUnsubscribeBtn.disabled = false;
+            }
         }
     </script>
 </body>
